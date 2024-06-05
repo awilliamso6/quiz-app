@@ -1,32 +1,32 @@
 import uuid
-from db.session import SessionFactory
-from db.models import Question
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from pydantic import BaseModel, UUID4
+from sqlalchemy.orm import Session
+
+from db.session import SessionFactory
+from db import models
+from db import schemas
+from db import actions
+
 
 app = FastAPI()
-mydb = SessionFactory()
 
-class QuestionModel(BaseModel):
-    text: str
-    answers: str
-    parent: UUID4 = None
-    category: str
+# DB Dependency
+def get_db():
+    mydb = SessionFactory()
+    try:
+        yield mydb
+    finally:
+        mydb.close()
 
 
 @app.get("/questions")
-def list_questions():
-    resp = mydb.query(Question).first()
+def list_questions(db: Session = Depends(get_db)):
+    resp = actions.list_questions(db)
     return {"message": resp}
 
 
 @app.post("/questions/")
-def create_question(q: QuestionModel):
-    q = Question(
-        text=q.text,
-        answers=q.answers,
-        category=q.category
-    )
-    mydb.add(q)
-    mydb.commit()
+def create_question(question: schemas.QuestionCreate, db: Session = Depends(get_db)):
+    return actions.create_question(db, question)
