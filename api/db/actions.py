@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import delete
 
 from . import models, schemas
 
@@ -12,4 +13,11 @@ def create_question(db: Session, question: schemas.QuestionCreate):
     db.add(question_row)
     db.commit()
     db.refresh(question_row)
+    print(question_row.question_id)
     return question_row
+
+
+def empty_questions(db: Session):
+    st = delete(models.Question)
+    db.execute(st)
+    db.commit()
