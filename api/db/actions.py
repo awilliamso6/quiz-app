@@ -13,7 +13,6 @@ def create_question(db: Session, question: schemas.QuestionCreate):
     db.add(question_row)
     db.commit()
     db.refresh(question_row)
-    print(question_row.question_id)
     return question_row
 
 
