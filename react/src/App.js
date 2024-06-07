@@ -1,5 +1,7 @@
-import { useReducer, useState } from 'react';
+import { useReducer, useState, useEffect } from 'react';
+import axios from 'axios';
 import './App.css';
+
 
 import quizData from './stub.js';
 
@@ -115,6 +117,22 @@ function App() {
 
   const [appState, dispatch] = useReducer(appReducer, AppStates.FORM);
 
+  const [testData, setTestData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get("http://127.0.0.1:8000/questions");
+        console.log(response.data);
+        setTestData(response.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const handleInputChange = (name, value) => {
     setUserNames({
       ...userNames,
@@ -129,9 +147,10 @@ function App() {
   };
 
   const formatData = (data) => {
+    console.log(data);
     return data.map((item) => ({
-      id: item.id,
-      question: item.question,
+      id: item.question_id,
+      question: item.text,
       parent: item.parent,
       answers: item.answers.split(",").map((item) => ({text: item, isSelected: false}))
     }));
@@ -141,7 +160,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         {appState === AppStates.FORM && <NameForm userNames={userNames} handleInputChange={handleInputChange} handleFormSubmit={handleFormSubmit} />}
-        {appState === AppStates.QUIZ && <Quiz data={formatData(quizData)} userNames={userNames} />}
+        {appState === AppStates.QUIZ && <Quiz data={formatData(testData)} userNames={userNames} />}
       </header>
     </div>
   );
