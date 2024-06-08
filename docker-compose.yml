@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  api:
+    build: ./api
+    depends_on:
+      - db
+    container_name: fastapi-app
+    environment:
+      PORT: 8000
+      DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - '8000:8000'
+    restart: "no"
+  react:
+    build: ./react
+    container_name: react-app
+    environment:
+      POST: 3000
+    ports:
+      - '3000:3000'
+    restart: "no"
+
+volumes:
+  postgres_data:

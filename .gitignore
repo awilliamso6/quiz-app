@@ -30,8 +30,6 @@ yarn-error.log*
 __pycache__
 /venv
 
-#docker
-docker-compose.yml
-
-#alembic config
-api/alembic.ini
+# env
+.env
+api/service_account.json
