@@ -48,7 +48,7 @@ def delete_questions(db: Session = Depends(get_db)):
 
 @app.post("/sync/")
 def sync_questions(db: Session = Depends(get_db)):
-    gc = gspread.service_account()
+    gc = gspread.service_account(filename='/code/service_account.json')
     try:
         sh = gc.open("test_spreadsheet")
     except gspread.exceptions.SpreadsheetNotFound as ex:
