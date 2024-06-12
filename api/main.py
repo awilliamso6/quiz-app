@@ -46,6 +46,16 @@ def delete_questions(db: Session = Depends(get_db)):
     actions.empty_questions(db)
 
 
+@app.post("/results/initial")
+def results_initial(result: schemas.ResultsInitial, db: Session = Depends(get_db)):
+    return actions.create_initial_result(db, result)
+
+
+@app.post("/results/second")
+def results_second(result: schemas.ResultsSecond, db: Session = Depends(get_db)):
+    return actions.append_second_result(db, result)
+
+
 @app.post("/sync/")
 def sync_questions(db: Session = Depends(get_db)):
     gc = gspread.service_account(filename='/code/service_account.json')
