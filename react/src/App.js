@@ -2,9 +2,6 @@ import { useReducer, useState, useEffect } from 'react';
 import axios from 'axios';
 import './App.css';
 
-
-import quizData from './stub.js';
-
 const AppStates = Object.freeze({
   FORM: "FORM",
   QUIZ: "QUIZ"
@@ -72,6 +69,23 @@ function Quiz({ data, userNames }) {
     }
   };
 
+  const handleQuizSubmit = async () => {
+    const submitQuizData = quizData.map((qElement, qIndex) => {
+      //const answerIndex = qElement.answers.findIndex(e => e.isSelected);
+      //console.log("ID:" + qElement.id + ", Answer:" + answerIndex);
+      return qElement.answers.findIndex(e => e.isSelected);
+    }).join(',');
+    const formData = {result_a: submitQuizData};
+    console.log(formData);
+    try {
+      const response = await axios.post("http://127.0.0.1:8000/results/initial", formData);
+      console.log(response.data);
+    } catch (err) {
+      console.log("Error: Unable to retrieve questions")
+      console.log(err);
+    }
+  };
+
   return (
     <div className='quiz-container'>
       <p>Cool Quiz Time</p>
@@ -85,7 +99,7 @@ function Quiz({ data, userNames }) {
           />
         )
       })}
-      <button type="submit">Submit!</button>
+      <button type="submit" onClick={handleQuizSubmit}>Submit!</button>
     </div>
   )
 }
@@ -126,6 +140,7 @@ function App() {
         console.log(response.data);
         setTestData(response.data);
       } catch (err) {
+        console.log("Error: Unable to retrieve questions")
         console.log(err);
       }
     };
@@ -149,7 +164,7 @@ function App() {
   const formatData = (data) => {
     console.log(data);
     return data.map((item) => ({
-      id: item.question_id,
+      id: item.id,
       question: item.text,
       parent: item.parent,
       answers: item.answers.split(",").map((item) => ({text: item, isSelected: false}))
