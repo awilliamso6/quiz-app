@@ -1,13 +1,16 @@
 import { useReducer, useState, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import './App.css';
 
-
-import quizData from './stub.js';
+import NameForm from './components/NameForm';
+import Quiz from './components/Quiz';
+import Result from './components/Result';
 
 const AppStates = Object.freeze({
   FORM: "FORM",
-  QUIZ: "QUIZ"
+  QUIZ: "QUIZ",
+  RESULT: "RESULT"
 });
 
 const appReducer = (state, action) => {
@@ -16,108 +19,35 @@ const appReducer = (state, action) => {
       return AppStates.FORM;
     case 'QUIZ':
       return AppStates.QUIZ;
+    case 'RESULT':
+      return AppStates.RESULT;
     default:
       throw new Error(`Unknown action type: ${action.type}`);
   }
-}
+};
 
-function Question({ questionData, userNames, handleAnswerClick }) {
-  return (
-    <div className="question-container">
-      <p>{questionData.question.replace("%p", userNames.partnerName)}</p>
-      <div className='answer-grid'>
-        {questionData.answers.map((answer, index) => (
-          <button
-          className={answer.isSelected ? "answer-clicked" : "answer-unclicked"}
-          key={index}
-          onClick={() => handleAnswerClick(questionData, index)}
-          >{answer.text}</button>
-        ))}
-      </div>
-    </div>
-  );
-}
+const useQuery = () => {
+  return new URLSearchParams(useLocation().search);
+};
 
-function Quiz({ data, userNames }) {
+function Main() {
 
-  const [quizData, setQuizData] = useState(data);
-
-  const handleAnswerClick = (questionData, answerId) => {
-    console.log("Answered! " + questionData.id + " Answer: " + answerId);
-
-    const updatedQuizData = quizData.map((qElement, qIndex) => {
-      if (qElement.id === questionData.id) {
-        return updateQuestion(qElement, answerId);
-      }
-      return qElement;
-    });
-    setQuizData(updatedQuizData);
-  };
-
-  const updateQuestion = (question, answerId) => {
-    return {
-      ...question,
-      answers: question.answers.map((aElement, aIndex) => {
-        if (aIndex === answerId) {
-          return {
-            ...aElement,
-            isSelected: true
-          }
-        }
-        return {
-          ...aElement,
-          isSelected: false
-        };
-      })
-    }
-  };
-
-  return (
-    <div className='quiz-container'>
-      <p>Cool Quiz Time</p>
-      {quizData.map((element) => {
-        return (
-          <Question 
-          key={element.id}
-          questionData={element}
-          userNames={userNames}
-          handleAnswerClick={handleAnswerClick}
-          />
-        )
-      })}
-      <button type="submit">Submit!</button>
-    </div>
-  )
-}
-
-function NameForm({ userNames, handleFormSubmit, handleInputChange }) {
-  return (
-    <div className="form-container">
-      <form onSubmit={handleFormSubmit}>
-        <div className="form-entry">
-          <label htmlFor="myName">Your Name:</label>
-          <input type="text" id="myName" name="myName" value={userNames.myName} onChange={(e) => handleInputChange(e.target.name, e.target.value)} />
-        </div>
-        <div className="form-entry">
-          <label htmlFor="myName">Partner Name:</label>
-          <input type="text" id="partnerName" name="partnerName" value={userNames.partnerName} onChange={(e) => handleInputChange(e.target.name, e.target.value)} />
-        </div>
-        <button type="submit">Submit</button>
-      </form>
-    </div>
-  )
-}
-
-function App() {
+  /*STATE DATA*/
+  const [appState, dispatch] = useReducer(appReducer, AppStates.FORM);
 
   const [userNames, setUserNames] = useState({
     myName: "",
-    partnerName: ""
+    myPronouns: "",
+    partnerName: "",
+    partnerPronouns: ""
   });
 
-  const [appState, dispatch] = useReducer(appReducer, AppStates.FORM);
-
   const [testData, setTestData] = useState(null);
+
+  const [resultsData, setResultsData] = useState(null);
+  /*STATE DATA*/
+
+  const [quizId, setQuizId] = useState(useQuery().get('name'));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,19 +56,47 @@ function App() {
         console.log(response.data);
         setTestData(response.data);
       } catch (err) {
+        console.log("Error: Unable to retrieve questions");
+        console.log(err);
+      }
+    };
+
+    const fetchResults = async (result_id) => {
+      try {
+        const response = await axios.get(`http://127.0.0.1:8000/results/${result_id}`);
+        console.log(response.data);
+        setResultsData(response.data);
+        setUserNames({
+          ...userNames,
+          myName: response.data.name_b,
+          myPronouns: response.data.pronoun_b,
+          partnerName: response.data.name_a,
+          partnerPronouns: response.data.pronoun_a
+        });
+        if (response.data.result_a && response.data.result_b) {
+          dispatch({ type: 'RESULT' });
+        }
+      } catch (err) {
+        console.log("Error: Unable to retrieve results");
         console.log(err);
       }
     };
 
     fetchData();
+
+    if (quizId) {
+      fetchResults(quizId);
+    }
   }, []);
 
+  /*
   const handleInputChange = (name, value) => {
     setUserNames({
       ...userNames,
       [name]: value
     });
   };
+  */
 
   const handleFormSubmit = (event) => {
     event.preventDefault();
@@ -146,10 +104,52 @@ function App() {
     console.log("Names:" + userNames.myName + ", " + userNames.partnerName);
   };
 
+  const handleQuizSubmit = async (quizData) => {
+    const submitQuizData = quizData.map((qElement, qIndex) => {
+      //const answerIndex = qElement.answers.findIndex(e => e.isSelected);
+      //console.log("ID:" + qElement.id + ", Answer:" + answerIndex);
+      return qElement.answers.findIndex(e => e.isSelected);
+    }).join(',');
+    if (quizId) {
+      const formData = {
+        id: quizId,
+        result_b: submitQuizData
+      };
+      console.log(formData);
+      try {
+        const response = await axios.post("http://127.0.0.1:8000/results/second", formData);
+        console.log(response.data);
+        setResultsData(response.data);
+        dispatch({ type: 'RESULT' });
+      } catch (err) {
+        console.log("Error: Unable to submit results")
+        console.log(err);
+      }
+    } else {
+      const formData = {
+        name_a: userNames.myName,
+        pronoun_a: userNames.myPronouns,
+        result_a: submitQuizData,
+        name_b: userNames.partnerName,
+        pronoun_b: userNames.partnerPronouns
+      };
+      console.log(formData);
+      try {
+        const response = await axios.post("http://127.0.0.1:8000/results/initial", formData);
+        console.log(response.data);
+        setResultsData(response.data);
+        dispatch({ type: 'RESULT' });
+      } catch (err) {
+        console.log("Error: Unable to submit results")
+        console.log(err);
+      }
+    }
+  };
+
   const formatData = (data) => {
     console.log(data);
     return data.map((item) => ({
-      id: item.question_id,
+      id: item.id,
       question: item.text,
       parent: item.parent,
       answers: item.answers.split(",").map((item) => ({text: item, isSelected: false}))
@@ -159,11 +159,20 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {appState === AppStates.FORM && <NameForm userNames={userNames} handleInputChange={handleInputChange} handleFormSubmit={handleFormSubmit} />}
-        {appState === AppStates.QUIZ && <Quiz data={formatData(testData)} userNames={userNames} />}
+        {appState === AppStates.FORM && <NameForm quizId={quizId} resultsData={resultsData} userNames={userNames} setUserNames={setUserNames} handleFormSubmit={handleFormSubmit} />}
+        {appState === AppStates.QUIZ && <Quiz data={formatData(testData)} userNames={userNames} handleQuizSubmit={handleQuizSubmit} />}
+        {appState === AppStates.RESULT && <Result data={resultsData} />}
       </header>
     </div>
   );
+}
+
+function App () {
+  return (
+    <Routes>
+      <Route path="/" element={<Main />} />
+    </Routes>
+  )
 }
 
 export default App;
