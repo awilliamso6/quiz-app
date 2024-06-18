@@ -16,6 +16,7 @@ The FastAPI component uses SQLAlchemy as a Python-based ORM for the database, as
 
 #### React Components
 NameForm - Form for the initial user to establish their name and their partner's name.
+
 Quiz - Component that lists quiz questions as retrieved from the database
 
 
