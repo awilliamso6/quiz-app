@@ -24,7 +24,11 @@ def upgrade() -> None:
     op.create_table(
         'results',
         sa.Column('id', sa.Uuid, primary_key=True, default=uuid.uuid4),
+        sa.Column('name_a', sa.String(50), nullable=True),
+        sa.Column('pronoun_a', sa.String(10), nullable=True),
         sa.Column('result_a', sa.String(200), nullable=True),
+        sa.Column('name_b', sa.String(50), nullable=True),
+        sa.Column('pronoun_b', sa.String(10), nullable=True),
         sa.Column('result_b', sa.String(200), nullable=True),
         sa.Column('timestamp', sa.DateTime, nullable=True)
     )

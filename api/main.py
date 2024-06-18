@@ -56,6 +56,11 @@ def results_second(result: schemas.ResultsSecond, db: Session = Depends(get_db))
     return actions.append_second_result(db, result)
 
 
+@app.get("/results/{result_id}")
+def results_by_id(result_id: str, db: Session = Depends(get_db)):
+    return actions.get_results_by_id(db, result_id)
+
+
 @app.post("/sync/")
 def sync_questions(db: Session = Depends(get_db)):
     gc = gspread.service_account(filename='/code/service_account.json')

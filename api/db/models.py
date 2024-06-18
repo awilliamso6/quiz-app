@@ -21,7 +21,11 @@ class Results(Base):
 
     id = Column(Uuid, primary_key=True, default=uuid.uuid4,
         unique=True, nullable=False)
+    name_a = Column(String, index=True, nullable=False)
+    pronoun_a = Column(String, index=True, nullable=False)
     result_a = Column(String, index=True, nullable=False)
+    name_b = Column(String, index=True, nullable=False)
+    pronoun_b = Column(String, index=True, nullable=False)
     result_b = Column(String, index=True, nullable=False)
     timestamp = Column(DateTime, index=True, nullable=True)
 

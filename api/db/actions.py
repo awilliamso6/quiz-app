@@ -38,3 +38,7 @@ def append_second_result(db: Session, result: schemas.ResultsSecond):
     db.commit()
     db.refresh(update_row)
     return update_row
+
+
+def get_results_by_id(db: Session, result_id: str):
+    return db.query(models.Results).filter_by(id=result_id).first()
