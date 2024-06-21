@@ -6,9 +6,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 def build_url():
-    with open("db/config/test.json") as fh:
-        config = json.load(fh)
-    url = os.getenv("DATABASE_URL", f"postgresql://{config['user']}:{config['pass']}@{config['host']}/{config['db']}")
+    url = os.getenv("DATABASE_URL")
+    if not url:
+        print("DATABASE_URL env not found. Attempting to load dev file...")
+        with open("db/.config.json") as fh:
+            config = json.load(fh)
+        url = f"postgresql://{config['user']}:{config['pass']}@{config['host']}/{config['db']}"
+    if not url:
+        raise RuntimeError("Unable to build DB URL. No env or dev file found.")
     return url
 
 engine = create_engine(build_url())

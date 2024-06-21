@@ -1,3 +1,4 @@
+import os
 import uuid
 
 from fastapi import FastAPI, Depends, HTTPException
@@ -12,10 +13,13 @@ from db import actions
 
 
 app = FastAPI()
+origin = os.getenv("CORS_ORIGIN")
+if origin is None:
+    raise RuntimeError("CORS_ORIGIN not defined in env. Unable to set up CORSMiddleware for FastAPI")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]

@@ -17,6 +17,7 @@ services:
     environment:
       PORT: 8000
       DATABASE_URL: ${DATABASE_URL}
+      CORS_ORIGIN: ${CORS_ORIGIN}
     ports:
       - '8000:8000'
     restart: "no"
