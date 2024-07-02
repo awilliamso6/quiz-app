@@ -35,9 +35,10 @@ def get_db():
 
 
 @app.get("/questions")
-def list_questions(db: Session = Depends(get_db)):
-    resp = actions.list_questions(db)
-    return resp
+def list_questions(category: str = None, db: Session = Depends(get_db)):
+    if category:
+        return actions.get_questions_by_category(category, db)
+    return actions.list_questions(db)
 
 
 @app.post("/questions/")
@@ -48,6 +49,14 @@ def create_question(question: schemas.QuestionCreate, db: Session = Depends(get_
 @app.delete("/questions/")
 def delete_questions(db: Session = Depends(get_db)):
     actions.empty_questions(db)
+
+
+@app.post("/results/submit")
+def results_submit(result_data: schemas.ResultsSubmit, db: Session = Depends(get_db)):
+    print("API:")
+    print(result_data.category)
+    print(result_data.result_data)
+    return actions.create_submit_result(db, result_data)
 
 
 @app.post("/results/initial")
@@ -73,11 +82,13 @@ def sync_questions(db: Session = Depends(get_db)):
     except gspread.exceptions.SpreadsheetNotFound as ex:
         raise HTTPException(status_code=500, detail=f"Exception opening Google Sheet: {type(ex)}:{ex}")
     data = sh.sheet1.get_all_values()
-    for (text, answers, parent, category) in data[1:]:
+    for (text, answers, parent, category, tag) in data[1:]:
         question = schemas.QuestionCreate(
             text=text,
             answers=answers,
-            category=category
+            parent=parent,
+            category=category,
+            tag=tag
         )
         result = actions.create_question(db, question)
         print(result)

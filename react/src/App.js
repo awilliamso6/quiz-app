@@ -13,7 +13,7 @@ function App () {
   return (
     <BrowserRouter>
       <header>
-        <h2>Quiz App</h2>
+        <h2>Double Pleasure</h2>
         <Navbar />
       </header>
       <main>
