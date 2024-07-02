@@ -1,18 +1,32 @@
 import { useState } from 'react';
+import styles from '../styles/Quiz.module.css';
 
 function Question({ questionData, userNames, handleAnswerClick }) {
+
+    const renderAnswers = (answers) => {
+      const rows = [];
+      for (let i = 0; i < answers.length; i += 3) {
+        rows.push(
+          <div className={styles.answerRow} key={i}>
+            {answers.slice(i, i + 3).map((answer, index) => (
+              <div className={styles.answer} key={index}>
+                <button
+                  className={answer.isSelected ? styles.answerClicked : styles.answerUnclicked}
+                  onClick={() => handleAnswerClick(questionData, index)}
+                >{answer.text}</button>
+              </div>
+            ))}
+          </div>
+        )
+      }
+
+      return rows;
+    };
+
     return (
-      <div className="question-container">
+      <div className={styles.questionContainer}>
         <p>{questionData.question.replace("%p", userNames.partnerName)}</p>
-        <div className='answer-grid'>
-          {questionData.answers.map((answer, index) => (
-            <button
-            className={answer.isSelected ? "answer-clicked" : "answer-unclicked"}
-            key={index}
-            onClick={() => handleAnswerClick(questionData, index)}
-            >{answer.text}</button>
-          ))}
-        </div>
+        <div className={styles.answersContainer}>{renderAnswers(questionData.answers)}</div>
       </div>
     );
   }
@@ -52,7 +66,7 @@ function Question({ questionData, userNames, handleAnswerClick }) {
     };
   
     return (
-      <div className='quiz-container'>
+      <div className={styles.quizContainer}>
         <p>Cool Quiz Time</p>
         {quizData.map((element) => {
           return (
