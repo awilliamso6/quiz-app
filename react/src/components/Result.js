@@ -6,7 +6,7 @@ function Result({ data }) {
       ) : (
         <>
           <p>Well done {data.name_a}! Now send this link to {data.name_b}</p>
-          <p><a href={`/?name=${data.id}`}>Link</a> </p>
+          <p><a href={`/quiz?name=${data.id}`}>Link</a> </p>
         </>
       )}
       </div>
