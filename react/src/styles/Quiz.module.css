@@ -1,0 +1,56 @@
+.quizContainer {
+  background-color: #333;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 550px;
+}
+
+.questionContainer {
+  background-color: #222;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 500px;
+}
+
+.answersContainer {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}
+
+.answerRow {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.answer {
+  margin: 0 5px;
+}
+
+.answerUnclicked {
+  background-color: #99AACC;
+  border: none;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+  border-radius: 4px;
+  flex: 1;
+}
+.answerClicked {
+  background-color: #5588CC;
+  border: none;
+  color: white;
+  padding: 20px 40px;
+  text-align: center;
+  font-size: 16px;
+  border-radius: 4px;
+  flex: 1;
+}
+
+.answerUnclicked:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+}
